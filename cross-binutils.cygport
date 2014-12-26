@@ -16,6 +16,7 @@ SRC_DIR="binutils-${VERSION%[a-z]}"
 PATCH_URI="
 	2.25-textdomain.patch
 	2.25-mep-PR17753.patch
+	2.25-sh64-PR17755.patch
 "
 
 # way too big to bother

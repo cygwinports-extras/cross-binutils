@@ -1,0 +1,82 @@
+NAME="cross-binutils"
+VERSION=2.25
+RELEASE=1
+CATEGORY="Devel"
+SUMMARY="Binutils for Newlib toolchains"
+DESCRIPTION="Assember, linker, and other binary utilities required for the
+Newlib cross-compiler embedded toolchains."
+HOMEPAGE="http://www.gnu.org/software/binutils/"
+case ${VERSION} in
+*.*.[5-9][0-9])
+	SRC_URI="mirror://sourceware/binutils/snapshots/binutils-${VERSION}.tar.bz2" ;;
+*)	SRC_URI="mirror://gnu/binutils/binutils-${VERSION}.tar.bz2" ;;
+esac
+SRC_DIR="binutils-${VERSION%[a-z]}"
+# prevent catalogs from colliding with native binutils (which may differ)
+PATCH_URI="
+	2.25-textdomain.patch
+	2.25-mep-PR17753.patch
+"
+
+# way too big to bother
+RESTRICT="debuginfo"
+
+targets=(aarch64-elf aarch64_be-elf arm-eabi avr-elf bfin-elf cr16-elf cris-elf
+	 epiphany-elf fido-elf fr30-elf frv-elf h8300-elf i386-elf ia64-elf
+	 iq2000-elf lm32-elf m32c-elf m32r-elf m68k-elf mcore-elf mep-elf
+	 microblaze-elf mips-elf mips64-elf mn10300-elf moxie-elf msp430-elf
+	 nds32be-elf nds32le-elf nios2-elf or1k-elf powerpc-eabi powerpc-eabialtivec
+	 powerpc-eabispe powerpcle-elf powerpcle-eabi rl78-elf rx-elf sh-elf
+	 sh64-elf sparc-elf sparc64-elf tic6x-elf v850-elf x86_64-elf
+	 xstormy16-elf spu-elf mmix)
+targets+=(arm-rtems avr-rtems bfin-rtems h8300-rtems i386-rtems lm32-rtems
+	 m32c-rtems m32r-rtems m68k-rtems microblaze-rtems mips-rtems
+	 moxie-rtems nios2-rtems powerpc-rtems sh-rtems sparc-rtems
+	 sparc64-rtems v850-rtems)
+
+PKG_NAMES="${NAME}-common"
+cross_binutils_common_CONTENTS="usr/share/doc/ usr/share/locale/"
+
+for tgt in ${targets[*]}
+do
+	tgtname=${tgt%-gnu*}
+	PKG_NAMES+=" ${tgtname}-binutils"
+	declare ${tgtname//[-\.]/_}_binutils_SUMMARY="Binutils for ${tgt%-*} newlib platform"
+	declare ${tgtname//[-\.]/_}_binutils_REQUIRES=${NAME}-common
+	declare ${tgtname//[-\.]/_}_binutils_CONTENTS="usr/bin/$tgt-* usr/$tgt/ usr/share/man/man1/$tgt-*"
+done
+
+src_compile() {
+	CYGCONF_SOURCE=${S}
+
+	for tgt in ${targets[*]}
+	do
+		[ ! -d ${B}/$tgt ] || continue
+		mkdir -p ${B}/$tgt
+		pushd ${B}/$tgt
+		# https://sourceware.org/ml/binutils/2014-01/msg00341.html
+		cygconf --target=$tgt --with-sysroot=/usr/$tgt/sys-root \
+			--without-libiconv-prefix --without-libintl-prefix \
+			--disable-werror --enable-multilib \
+			--disable-gdb --disable-libdecnumber \
+			--disable-readline --disable-sim
+		cygmake
+		popd
+	done
+}
+
+
+src_install() {
+	for tgt in ${targets[*]}
+	do
+		pushd ${B}/$tgt
+		cyginstall
+		popd
+	done
+
+	# these binaries do not apply to these arches
+	rm -f ${D}/usr/share/man/man1/*-{dlltool,nlmconv,windmc,windres}.*
+
+	# conflicts with native binutils
+	rm -fr ${D}/usr/lib/ ${D}/usr/share/info/
+}

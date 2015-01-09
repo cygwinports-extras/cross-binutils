@@ -26,14 +26,10 @@ targets=(aarch64-elf aarch64_be-elf arm-eabi avr-elf bfin-elf cr16-elf cris-elf
 	 epiphany-elf fido-elf fr30-elf frv-elf h8300-elf i386-elf ia64-elf
 	 iq2000-elf lm32-elf m32c-elf m32r-elf m68k-elf mcore-elf mep-elf
 	 microblaze-elf mips-elf mips64-elf mn10300-elf moxie-elf msp430-elf
-	 nds32be-elf nds32le-elf nios2-elf or1k-elf powerpc-eabi powerpc-eabialtivec
-	 powerpc-eabispe powerpcle-elf powerpcle-eabi rl78-elf rx-elf sh-elf
-	 sh64-elf sparc-elf sparc64-elf tic6x-elf v850-elf x86_64-elf
-	 xstormy16-elf spu-elf mmix)
-targets+=(arm-rtems avr-rtems bfin-rtems h8300-rtems i386-rtems lm32-rtems
-	 m32c-rtems m32r-rtems m68k-rtems microblaze-rtems mips-rtems
-	 moxie-rtems nios2-rtems powerpc-rtems sh-rtems sparc-rtems
-	 sparc64-rtems v850-rtems)
+	 nds32be-elf nds32le-elf nios2-elf or1k-elf powerpc-elf powerpc-eabi
+	 powerpc-eabisim powerpcle-elf powerpcle-eabi powerpcle-eabisim
+	 rl78-elf rx-elf sh-elf sh64-elf sparc-elf sparc64-elf spu-elf tic6x-elf
+	 v850-elf x86_64-elf xstormy16-elf mmix)
 
 PKG_NAMES="${NAME}-common"
 cross_binutils_common_CONTENTS="usr/share/doc/ usr/share/locale/"

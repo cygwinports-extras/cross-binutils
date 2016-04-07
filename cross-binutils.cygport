@@ -1,5 +1,5 @@
 NAME="cross-binutils"
-VERSION=2.25.1
+VERSION=2.26
 RELEASE=1
 CATEGORY="Devel"
 SUMMARY="Binutils for Newlib toolchains"
@@ -15,20 +15,22 @@ SRC_DIR="binutils-${VERSION%[a-z]}"
 # prevent catalogs from colliding with native binutils (which may differ)
 PATCH_URI="
 	2.25-textdomain.patch
-	2.25-moxie-opcodes.patch
+	2.26-tic6x-PR19614.patch
 "
 
 # way too big to bother
-RESTRICT="debuginfo"
+#RESTRICT="debuginfo"
 
+# iq2000-elf: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=64400
+# m32c-elf: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=64375
 targets=(aarch64-elf aarch64_be-elf arm-eabi bfin-elf cr16-elf cris-elf
 	 epiphany-elf fido-elf fr30-elf frv-elf h8300-elf i386-elf ia64-elf
-	 iq2000-elf lm32-elf m32c-elf m32r-elf m68k-elf mcore-elf mep-elf
+	 lm32-elf m32r-elf m68k-elf mcore-elf
 	 microblaze-elf mips-elf mips64-elf mn10300-elf moxie-elf msp430-elf
-	 nds32be-elf nds32le-elf nios2-elf powerpc-elf powerpc-eabi
-	 powerpc-eabisim powerpcle-elf powerpcle-eabi powerpcle-eabisim
-	 rl78-elf rx-elf sh-elf sh64-elf sparc-elf sparc64-elf spu-elf tic6x-elf
-	 v850-elf x86_64-elf xstormy16-elf mmix)
+	 nds32be-elf nds32le-elf nios2-elf
+	 powerpc-elf powerpc-eabi powerpc-eabisim
+	 rl78-elf rx-elf sh-elf sh64-elf sparc-elf sparc64-elf spu-elf
+	 tic6x-elf v850-elf x86_64-elf xstormy16-elf mmix)
 
 PKG_NAMES="${NAME}-common"
 cross_binutils_common_CONTENTS="usr/share/doc/ usr/share/locale/"
@@ -53,6 +55,7 @@ src_compile() {
 		# https://sourceware.org/ml/binutils/2014-01/msg00341.html
 		cygconf --target=$tgt --with-sysroot=/usr/$tgt/sys-root \
 			--without-libiconv-prefix --without-libintl-prefix \
+			--with-system-zlib \
 			--disable-werror --enable-multilib \
 			--disable-gdb --disable-libdecnumber \
 			--disable-readline --disable-sim

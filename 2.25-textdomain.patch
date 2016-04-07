@@ -6,7 +6,7 @@
  # Define the identity of the package.
 - PACKAGE='bfd'
 + PACKAGE=cross-bfd
-  VERSION='2.25.1'
+  VERSION='2.26'
  
  
 --- a/binutils/configure
@@ -17,7 +17,7 @@
  # Define the identity of the package.
 - PACKAGE='binutils'
 + PACKAGE=cross-binutils
-  VERSION='2.25.1'
+  VERSION='2.26'
  
  
 --- a/gas/configure
@@ -28,7 +28,7 @@
  # Define the identity of the package.
 - PACKAGE='gas'
 + PACKAGE=cross-gas
-  VERSION='2.25.1'
+  VERSION='2.26'
  
  
 --- a/gprof/configure
@@ -39,7 +39,7 @@
  # Define the identity of the package.
 - PACKAGE='gprof'
 + PACKAGE=cross-gprof
-  VERSION='2.25.1'
+  VERSION='2.26'
  
  
 --- a/ld/configure
@@ -50,7 +50,7 @@
  # Define the identity of the package.
 - PACKAGE='ld'
 + PACKAGE=cross-ld
-  VERSION='2.25.1'
+  VERSION='2.26'
  
  
 --- a/opcodes/configure
@@ -61,6 +61,6 @@
  # Define the identity of the package.
 - PACKAGE='opcodes'
 + PACKAGE=cross-opcodes
-  VERSION='2.25.1'
+  VERSION='2.26'
  
  

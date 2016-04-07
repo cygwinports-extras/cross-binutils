@@ -1,0 +1,132 @@
+From bd5608dcc6a76876db06b1af1852252a4282aa2f Mon Sep 17 00:00:00 2001
+From: Nick Clifton <nickc@redhat.com>
+Date: Thu, 11 Feb 2016 15:30:55 +0000
+Subject: [PATCH 1/1] Allow the .cfi_sections directive to be reissued provided that CFI generation has not yet started.
+
+	PR gas/19614
+	* dw2gencfi.c (cfi_sections_set): Delay setting this variable
+	until it is actually used.
+	(cfi_set_sections): Set cfi_sections_set to true.
+	(dot_cfi_startproc): Likewise.
+	(dot_cfi_endproc): Likewise.
+	(dot_cfi_fde_data): Likewise.
+	(cfi_finish): Likewise.
+	(dot_cfi_sections): Do not set cfi_sections_set.
+	* doc/as.texinfo (.cfi_sections): Note that targets can provide
+	their own cfi section name.  Also note that the directive can be
+	reissued provided that CFI generation has not started.
+	* testsuite/gas/mips/compact-eh-err2.s: Add .cfi_startproc and
+	.cfi_endproc directives so that the redefinition of .cfi_sections
+	will trigger the generation of the error message.
+	* testsuite/gas/mips/compact-eh-err2.l: Update expected line
+	number of error message.
+---
+ gas/ChangeLog                            |   20 ++++++++++++++++++++
+ gas/doc/as.texinfo                       |    8 ++++++++
+ gas/dw2gencfi.c                          |    7 ++++++-
+ gas/testsuite/gas/mips/compact-eh-err2.l |    2 +-
+ gas/testsuite/gas/mips/compact-eh-err2.s |    3 +++
+ 5 files changed, 38 insertions(+), 2 deletions(-)
+
+diff --git a/gas/doc/as.texinfo b/gas/doc/as.texinfo
+index 90611a3..917781b 100644
+--- a/gas/doc/as.texinfo
++++ b/gas/doc/as.texinfo
+@@ -4683,6 +4683,14 @@ directive is not used is @code{.cfi_sections .eh_frame}.
+ On targets that support compact unwinding tables these can be generated
+ by specifying @code{.eh_frame_entry} instead of @code{.eh_frame}.
+ 
++Some targets may support an additional name, such as @code{.c6xabi.exidx}
++which is used by the @value{TIC6X} target.
++
++The @code{.cfi_sections} directive can be repeated, with the same or different
++arguments, provided that CFI generation has not yet started.  Once CFI
++generation has started however the section list is fixed and any attempts to
++redefine it will result in an error.
++
+ @subsection @code{.cfi_startproc [simple]}
+ @cindex @code{cfi_startproc} directive
+ @code{.cfi_startproc} is used at the beginning of each function that
+diff --git a/gas/dw2gencfi.c b/gas/dw2gencfi.c
+index 195013b..c66402d 100644
+--- a/gas/dw2gencfi.c
++++ b/gas/dw2gencfi.c
+@@ -509,6 +509,7 @@ void
+ cfi_set_sections (void)
+ {
+   frchain_now->frch_cfi_data->cur_fde_data->sections = all_cfi_sections;
++  cfi_sections_set = TRUE;
+ }
+ 
+ /* Universal functions to store new instructions.  */
+@@ -1248,7 +1249,6 @@ dot_cfi_sections (int ignored ATTRIBUTE_UNUSED)
+   demand_empty_rest_of_line ();
+   if (cfi_sections_set && cfi_sections != sections)
+     as_bad (_("inconsistent uses of .cfi_sections"));
+-  cfi_sections_set = TRUE;
+   cfi_sections = sections;
+ }
+ 
+@@ -1284,6 +1284,7 @@ dot_cfi_startproc (int ignored ATTRIBUTE_UNUSED)
+     }
+   demand_empty_rest_of_line ();
+ 
++  cfi_sections_set = TRUE;
+   all_cfi_sections |= cfi_sections;
+   cfi_set_sections ();
+   frchain_now->frch_cfi_data->cur_cfa_offset = 0;
+@@ -1310,6 +1311,7 @@ dot_cfi_endproc (int ignored ATTRIBUTE_UNUSED)
+ 
+   demand_empty_rest_of_line ();
+ 
++  cfi_sections_set = TRUE;
+   if ((cfi_sections & CFI_EMIT_target) != 0)
+     tc_cfi_endproc (last_fde);
+ }
+@@ -1372,6 +1374,7 @@ dot_cfi_fde_data (int ignored ATTRIBUTE_UNUSED)
+ 
+   last_fde = frchain_now->frch_cfi_data->cur_fde_data;
+ 
++  cfi_sections_set = TRUE;
+   if ((cfi_sections & CFI_EMIT_target) != 0
+       || (cfi_sections & CFI_EMIT_eh_frame_compact) != 0)
+     {
+@@ -2223,6 +2226,7 @@ cfi_finish (void)
+   if (all_fde_data == 0)
+     return;
+ 
++  cfi_sections_set = TRUE;
+   if ((all_cfi_sections & CFI_EMIT_eh_frame) != 0
+       || (all_cfi_sections & CFI_EMIT_eh_frame_compact) != 0)
+     {
+@@ -2408,6 +2412,7 @@ cfi_finish (void)
+       flag_traditional_format = save_flag_traditional_format;
+     }
+ 
++  cfi_sections_set = TRUE;
+   if ((all_cfi_sections & CFI_EMIT_debug_frame) != 0)
+     {
+       int alignment = ffs (DWARF2_ADDR_SIZE (stdoutput)) - 1;
+diff --git a/gas/testsuite/gas/mips/compact-eh-err2.l b/gas/testsuite/gas/mips/compact-eh-err2.l
+index c52976a..11e9b8e 100644
+--- a/gas/testsuite/gas/mips/compact-eh-err2.l
++++ b/gas/testsuite/gas/mips/compact-eh-err2.l
+@@ -1,2 +1,2 @@
+ .*: Assembler messages:
+-.*:7: Error: inconsistent uses of .cfi_sections
++.*:8: Error: inconsistent uses of .cfi_sections
+diff --git a/gas/testsuite/gas/mips/compact-eh-err2.s b/gas/testsuite/gas/mips/compact-eh-err2.s
+index acf83d1..2ce265a 100644
+--- a/gas/testsuite/gas/mips/compact-eh-err2.s
++++ b/gas/testsuite/gas/mips/compact-eh-err2.s
+@@ -4,4 +4,7 @@
+ 	.align	2
+ 	.globl	_Z3fooi
+ 	.cfi_sections .eh_frame_entry
++	.cfi_startproc
+ 	.cfi_sections .eh_frame
++	.cfi_endproc
++
+-- 
+1.7.1
+

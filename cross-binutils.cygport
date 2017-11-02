@@ -1,6 +1,6 @@
 NAME="cross-binutils"
-VERSION=2.26
-RELEASE=2
+VERSION=2.29.1
+RELEASE=1
 CATEGORY="Devel"
 SUMMARY="Binutils for Newlib toolchains"
 DESCRIPTION="Assember, linker, and other binary utilities required for the
@@ -8,14 +8,13 @@ Newlib cross-compiler embedded toolchains."
 HOMEPAGE="http://www.gnu.org/software/binutils/"
 case ${VERSION} in
 *.*.[5-9][0-9])
-	SRC_URI="mirror://sourceware/binutils/snapshots/binutils-${VERSION}.tar.bz2" ;;
-*)	SRC_URI="mirror://gnu/binutils/binutils-${VERSION}.tar.bz2" ;;
+	SRC_URI="mirror://sourceware/binutils/snapshots/binutils-${VERSION}.tar.xz" ;;
+*)	SRC_URI="mirror://gnu/binutils/binutils-${VERSION}.tar.xz" ;;
 esac
 SRC_DIR="binutils-${VERSION%[a-z]}"
 # prevent catalogs from colliding with native binutils (which may differ)
 PATCH_URI="
-	2.25-textdomain.patch
-	2.26-tic6x-PR19614.patch
+	2.29-textdomain.patch
 "
 
 # way too big to bother
